@@ -186,11 +186,10 @@ jobs:
   configure-infrastructure:
     docker:
       # Docker image here that supports Ansible
-      - image: cimg/base:stable
+      - image: cimg/python:3.10
     steps:
       # Checkout code from git
       - checkout
-      - install_awscli
       # Add ssh keys with fingerprint
       - add_ssh:
           fingerprints: ["a6:10:fa:81:74:6e:45:7c:bb:31:1c:72:87:97:4c:2a"]
@@ -201,11 +200,8 @@ jobs:
           name: Install dependencies
           command: |
             # Your code here
-            sudo apt update 
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install -y python3
-            sudo apt install -y ansible
-      - run:
+            pip3 install awscli
+            pip3 install ansible
           name: Configure server
           command: |
             # Your code here
