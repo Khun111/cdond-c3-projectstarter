@@ -255,6 +255,7 @@ jobs:
           name: Install dependencies
           command: |
             # your code here
+            sudo apt-get update && sudo apt-get upgrade
             sudo apt-get install python3-pip
             pip3 install awscli
             pip3 install ansible
@@ -285,22 +286,46 @@ jobs:
       - destroy-environment
       - revert-migrations
                     
-#   deploy-backend:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
+  deploy-backend:
+    docker:
+      # Docker image here that supports Ansible
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+          fingerprints: ["a6:10:fa:81:74:6e:45:7c:bb:31:1c:72:87:97:4c:2a"]
+      # attach workspace
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            sudo apt-get update && sudo apt-get upgrade
+            sudo apt-get install python3-pip
+            pip3 install awscli
+            pip3 install ansible
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
+            cd backend
+            npm i
+            npm run build
+            cd ..
+      - run:
+          name: Zip directory
+          command: |
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      # Here's where you will add some code to rollback on failure  
+      - destroy-environment
+      - revert-migrations
 
 #   smoke-test:
 #     docker:
